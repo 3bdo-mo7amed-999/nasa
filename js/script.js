@@ -1,3 +1,44 @@
+// ===== نظام إدارة الإصدارات والتحديثات =====
+const APP_VERSION = "1.0.0"; // غير هذا الرقم مع كل تحديث
+const CURRENT_BUILD_DATE = "2024-12-15"; // غير التاريخ مع كل تحديث
+
+// التحقق من وجود تحديثات
+function checkForUpdates() {
+    const savedVersion = localStorage.getItem('nasa_app_version');
+    const savedBuildDate = localStorage.getItem('nasa_build_date');
+
+    // إذا كانت النسخة مختلفة أو التاريخ مختلف، يحدث فرش كامل
+    if (savedVersion !== APP_VERSION || savedBuildDate !== CURRENT_BUILD_DATE) {
+        console.log('🔄 تحديث جديد متاح! جاري تحميل النسخة الجديدة...');
+
+        // حفظ الإصدار الجديد
+        localStorage.setItem('nasa_app_version', APP_VERSION);
+        localStorage.setItem('nasa_build_date', CURRENT_BUILD_DATE);
+
+        // إعادة تعيين اللغة والصفحة إلى الوضع الافتراضي (اختياري)
+        // إذا كنت تريد إبقاء اللغة المختارة، احذف هذين السطرين
+        // localStorage.removeItem('nasa_lang');
+        // localStorage.removeItem('nasa_page');
+
+        // إعادة تحميل الصفحة مرة واحدة فقط إذا كان هناك تحديث
+        if (!sessionStorage.getItem('nasa_reloaded_for_update')) {
+            sessionStorage.setItem('nasa_reloaded_for_update', 'true');
+            window.location.reload(true); // true = force reload from server
+            return true; // أوقف التنفيذ الحالي
+        }
+    } else {
+        // تنظيف علامة إعادة التحميل
+        sessionStorage.removeItem('nasa_reloaded_for_update');
+    }
+    return false;
+}
+
+// تنفيذ التحقق قبل أي شيء آخر
+if (checkForUpdates()) {
+    // إذا كان هناك تحديث، لا نكمل التنفيذ
+    throw new Error('Reloading with new version...');
+}
+
 const translations = {
     ar: {
         dir: "rtl",
