@@ -1346,7 +1346,7 @@ section {
 }
 
 [data-theme="dark"] .logo-wrapper {
-    background: linear-gradient(135deg, #1e293b, #334155);
+    background: linear-gradient(135deg, #ffffff, #f8f5f0);
     border-color: rgba(240, 208, 96, 0.3);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
