@@ -66,7 +66,7 @@ const translations = {
                 desc: "خبرة في المشاريع الباريسية الراقية",
             },
             {
-                icon: "fa-shield-haltered",
+                icon: "fa-solid fa-shield-halved",
                 title: "معايير NF C15-100",
                 desc: "التزام بالمعايير الكهربائية الفرنسية",
             },
@@ -216,7 +216,7 @@ const translations = {
                 desc: "Expertise parisienne de qualité",
             },
             {
-                icon: "fa-shield-haltered",
+                icon: "fa-solid fa-shield-halved",
                 title: "Normes NF C15-100",
                 desc: "Conformité stricte aux normes électriques",
             },
@@ -361,7 +361,7 @@ const translations = {
         whyItems: [
             { icon: "fa-medal", title: "Since 2023", desc: "Parisian expertise" },
             {
-                icon: "fa-shield-haltered",
+                icon: "fa-solid fa-shield-halved",
                 title: "NF C15-100 Standards",
                 desc: "Strict electrical compliance",
             },
