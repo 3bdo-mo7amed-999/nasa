@@ -1,7 +1,7 @@
 const translations = {
     ar: {
         dir: "rtl",
-        flag: "🇪🇬",
+        flag: "assets/flags/eg.svg",
         name: "العربية",
         home: "الرئيسية",
         about: "من نحن",
@@ -151,7 +151,7 @@ const translations = {
     },
     fr: {
         dir: "ltr",
-        flag: "🇫🇷",
+        flag: "assets/flags/fr.svg",
         name: "Français",
         home: "Accueil",
         about: "À propos",
@@ -300,7 +300,7 @@ const translations = {
     },
     en: {
         dir: "ltr",
-        flag: "🇺🇸",
+        flag: "assets/flags/us.svg",
         name: "English",
         home: "Home",
         about: "About",
@@ -441,46 +441,52 @@ const translations = {
     },
 };
 
-// ===== استعادة الحالة المحفوظة =====
+let currentLang = "fr";
+let currentPage = "home";
+const pages = ["home", "about", "elec", "paint", "portfolio", "quote", "contact"];
+
+function t(key) {
+    const translation = translations[currentLang]?.[key];
+    if (translation !== undefined) return translation;
+    // Fallback to French if translation missing
+    return translations["fr"]?.[key] || key;
+}
+
 function loadSavedState() {
-    // استعادة اللغة المحفوظة
-    const savedLang = localStorage.getItem('nasa_lang');
+    const savedLang = localStorage.getItem("nasa_lang");
     if (savedLang && translations[savedLang]) {
         currentLang = savedLang;
     }
 
-    // استعادة الصفحة المحفوظة
-    const savedPage = localStorage.getItem('nasa_page');
+    const savedPage = localStorage.getItem("nasa_page");
     if (savedPage && pages.includes(savedPage)) {
         currentPage = savedPage;
     }
 
-    // استعادة الوضع (dark/light)
-    const savedTheme = localStorage.getItem('nasa_theme');
-    if (savedTheme) {
-        document.documentElement.setAttribute('data-theme', savedTheme);
+    const savedTheme = localStorage.getItem("nasa_theme");
+    if (savedTheme === "dark") {
+        document.documentElement.setAttribute("data-theme", "dark");
+    } else {
+        document.documentElement.setAttribute("data-theme", "light");
     }
 }
 
-// ===== حفظ الحالة =====
 function saveState() {
-    localStorage.setItem('nasa_lang', currentLang);
-    localStorage.setItem('nasa_page', currentPage);
+    localStorage.setItem("nasa_lang", currentLang);
+    localStorage.setItem("nasa_page", currentPage);
 }
 
-// ===== تحديث URL مع الحالة (اختياري - للـ browser history) =====
 function updateURL() {
     const url = new URL(window.location);
-    url.searchParams.set('lang', currentLang);
-    url.searchParams.set('page', currentPage);
-    window.history.replaceState({}, '', url);
+    url.searchParams.set("lang", currentLang);
+    url.searchParams.set("page", currentPage);
+    window.history.replaceState({}, "", url);
 }
 
-// ===== استعادة الحالة من URL أيضاً =====
 function loadStateFromURL() {
     const url = new URL(window.location);
-    const langParam = url.searchParams.get('lang');
-    const pageParam = url.searchParams.get('page');
+    const langParam = url.searchParams.get("lang");
+    const pageParam = url.searchParams.get("page");
 
     if (langParam && translations[langParam]) {
         currentLang = langParam;
@@ -491,127 +497,135 @@ function loadStateFromURL() {
     }
 }
 
-let currentLang = "fr",
-    currentPage = "home";
-const pages = [
-    "home",
-    "about",
-    "elec",
-    "paint",
-    "portfolio",
-    "quote",
-    "contact",
-];
-
-function t(k) {
-    return translations[currentLang]?.[k] || k;
-}
-
-// ===== THEME MANAGEMENT =====
 function initTheme() {
-    const savedTheme = localStorage.getItem('nasa_theme') || 'light';
-    document.documentElement.setAttribute('data-theme', savedTheme);
+    const savedTheme = localStorage.getItem("nasa_theme") || "light";
+    document.documentElement.setAttribute("data-theme", savedTheme);
     updateThemeIcon();
 }
 
 function toggleTheme() {
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('nasa_theme', newTheme);
+    const currentTheme = document.documentElement.getAttribute("data-theme");
+    const newTheme = currentTheme === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", newTheme);
+    localStorage.setItem("nasa_theme", newTheme);
     updateThemeIcon();
 }
 
 function updateThemeIcon() {
-    const themeIcon = document.querySelector('#themeToggle i');
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-
-    if (currentTheme === 'dark') {
-        themeIcon.className = 'fas fa-sun';
-    } else {
-        themeIcon.className = 'fas fa-moon';
-    }
+    const themeIcon = document.querySelector("#themeToggle i");
+    if (!themeIcon) return;
+    const currentTheme = document.documentElement.getAttribute("data-theme");
+    themeIcon.className = currentTheme === "dark" ? "fas fa-sun" : "fas fa-moon";
 }
 
-document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+document.getElementById("themeToggle")?.addEventListener("click", toggleTheme);
 
 function updateDir() {
     document.documentElement.dir = t("dir");
     document.documentElement.lang = currentLang;
-    document.getElementById("currentLangFlag").textContent = t("flag");
-    document.getElementById("currentLangText").textContent = t("name");
-    document
-        .querySelectorAll(".lang-option")
-        .forEach((o) =>
-            o.classList.toggle("active", o.dataset.lang === currentLang),
-        );
+
+    const flagImg = document.getElementById("currentLangFlag");
+    if (flagImg) {
+        flagImg.src = t("flag");
+        flagImg.alt = t("name");
+    }
+
+    const langText = document.getElementById("currentLangText");
+    if (langText) {
+        langText.textContent = t("name");
+    }
+
+    document.querySelectorAll(".lang-option").forEach((opt) => {
+        opt.classList.toggle("active", opt.dataset.lang === currentLang);
+    });
 }
 
 const langDropdown = document.getElementById("langDropdown");
-document.getElementById("langToggle").addEventListener("click", (e) => {
+document.getElementById("langToggle")?.addEventListener("click", (e) => {
     e.stopPropagation();
-    langDropdown.classList.toggle("open");
+    langDropdown?.classList.toggle("open");
 });
-document.addEventListener("click", () => langDropdown.classList.remove("open"));
-document.getElementById("langMenu").addEventListener("click", (e) => {
-    const opt = e.target.closest(".lang-option");
-    if (opt) {
-        currentLang = opt.dataset.lang;
-        saveState(); // حفظ اللغة المختارة
-        updateURL(); // تحديث URL
-        updateDir();
-        buildAll();
-        renderPage();
-        langDropdown.classList.remove("open");
+
+document.addEventListener("click", (e) => {
+    if (!langDropdown?.contains(e.target)) {
+        langDropdown?.classList.remove("open");
     }
 });
 
-const mobileMenu = document.getElementById("mobileMenu"),
-    mobileOverlay = document.getElementById("mobileOverlay");
+document.getElementById("langMenu")?.addEventListener("click", (e) => {
+    const opt = e.target.closest(".lang-option");
+    if (opt) {
+        currentLang = opt.dataset.lang;
+        saveState();
+        updateURL();
+        updateDir();
+        buildAll();
+        renderPage();
+        langDropdown?.classList.remove("open");
+    }
+});
+
+const mobileMenu = document.getElementById("mobileMenu");
+const mobileOverlay = document.getElementById("mobileOverlay");
 
 function openM() {
-    mobileMenu.classList.add("open");
-    mobileOverlay.classList.add("open");
+    mobileMenu?.classList.add("open");
+    mobileOverlay?.classList.add("open");
     document.body.style.overflow = "hidden";
 }
 
 function closeM() {
-    mobileMenu.classList.remove("open");
-    mobileOverlay.classList.remove("open");
+    mobileMenu?.classList.remove("open");
+    mobileOverlay?.classList.remove("open");
     document.body.style.overflow = "";
 }
-document.getElementById("hamburgerBtn").addEventListener("click", openM);
-document.getElementById("mobileClose").addEventListener("click", closeM);
-mobileOverlay.addEventListener("click", closeM);
+
+document.getElementById("hamburgerBtn")?.addEventListener("click", openM);
+document.getElementById("mobileClose")?.addEventListener("click", closeM);
+mobileOverlay?.addEventListener("click", closeM);
 
 function buildMobileNav() {
-    const c = document.getElementById("mobileNavLinks");
-    c.innerHTML = pages
+    const container = document.getElementById("mobileNavLinks");
+    if (!container) return;
+
+    container.innerHTML = pages
         .map(
             (p) =>
-                `<a href="#" data-nav="${p}" class="${currentPage === p ? "active-link" : ""}">${t(p)}</a>`,
+                `<a href="#" data-nav="${p}" class="${currentPage === p ? "active-link" : ""}">${t(p)}</a>`
         )
         .join("");
-    c.querySelectorAll("a").forEach((a) =>
+
+    container.querySelectorAll("a").forEach((a) => {
         a.addEventListener("click", (e) => {
             e.preventDefault();
             navigateTo(a.dataset.nav);
             closeM();
-        }),
-    );
-    document.querySelector("#mobileMenu .btn-primary span").textContent =
-        t("mobileQuoteBtn");
+        });
+    });
+
+    const mobileBtn = document.querySelector("#mobileMenu .btn-primary span");
+    if (mobileBtn) {
+        mobileBtn.textContent = t("mobileQuoteBtn");
+    }
 }
 
 function buildDesktopNav() {
-    document.getElementById("mainNav").innerHTML = pages
+    const mainNav = document.getElementById("mainNav");
+    if (!mainNav) return;
+
+    mainNav.innerHTML = pages
         .map(
             (p) =>
-                `<a href="#" data-nav="${p}" class="${currentPage === p ? "active-link" : ""}">${t(p)}</a>`,
+                `<a href="#" data-nav="${p}" class="${currentPage === p ? "active-link" : ""}">${t(p)}</a>`
         )
         .join("");
-    document.getElementById("ctaBtn").querySelector("span").textContent =
-        t("quoteBtn");
+
+    const ctaBtn = document.getElementById("ctaBtn");
+    if (ctaBtn) {
+        const span = ctaBtn.querySelector("span");
+        if (span) span.textContent = t("quoteBtn");
+    }
+
     document.querySelectorAll("[data-nav]").forEach((el) => {
         if (!el.dataset.bound) {
             el.addEventListener("click", (e) => {
@@ -624,7 +638,10 @@ function buildDesktopNav() {
 }
 
 function buildFooter() {
-    document.getElementById("footerLinksTitle").textContent = t("footerQuickLinks");
+    const footerLinksTitle = document.getElementById("footerLinksTitle");
+    if (footerLinksTitle) {
+        footerLinksTitle.textContent = t("footerQuickLinks");
+    }
 
     const footerServicesTitle = document.getElementById("footerServicesTitle");
     if (footerServicesTitle) {
@@ -637,22 +654,24 @@ function buildFooter() {
     }
 
     const fl = document.getElementById("footerLinks");
-    fl.innerHTML = pages
-        .map((p) => `<a href="#" data-nav="${p}">${t(p)}</a>`)
-        .join("");
-    fl.querySelectorAll("a").forEach((a) =>
-        a.addEventListener("click", (e) => {
-            e.preventDefault();
-            navigateTo(a.dataset.nav);
-        }),
-    );
+    if (fl) {
+        fl.innerHTML = pages
+            .map((p) => `<a href="#" data-nav="${p}">${t(p)}</a>`)
+            .join("");
+        fl.querySelectorAll("a").forEach((a) => {
+            a.addEventListener("click", (e) => {
+                e.preventDefault();
+                navigateTo(a.dataset.nav);
+            });
+        });
+    }
 
-    const footerGrid = document.querySelector('.footer-grid');
+    const footerGrid = document.querySelector(".footer-grid");
     if (footerGrid) {
         const contactDiv = footerGrid.lastElementChild;
         if (contactDiv) {
             contactDiv.innerHTML = `
-                <h4 id="footerContactTitle">${t('footerContact')}</h4>
+                <h4 id="footerContactTitle">${t("footerContact")}</h4>
                 <p><i class="fas fa-map-marker-alt"></i> 15 rue Lepic Paris 75018</p>
                 <p><i class="fas fa-phone"></i> 06 51 54 51 29</p>
                 <p><i class="fas fa-phone"></i> 07 67 20 16 57</p>
@@ -672,77 +691,76 @@ function renderStars(n) {
     return Array.from(
         { length: 5 },
         (_, i) =>
-            `<i class="fas fa-star" style="color:${i < n ? "var(--gold)" : "#555"};"></i>`,
+            `<i class="fas fa-star" style="color:${i < n ? "var(--gold)" : "#555"};"></i>`
     ).join("");
 }
 
 function renderPage() {
-    const c = document.getElementById("pageContent");
-    let h = "";
+    const container = document.getElementById("pageContent");
+    if (!container) return;
+
+    let html = "";
+
     if (currentPage === "home") {
-        h = `<div class="hero"><div class="container"><div class="hero-content"><div class="hero-badge">${t("heroBadge")}</div><h1>${t("heroTitle")}</h1><p>${t("heroDesc")}</p><div class="hero-buttons"><a href="#" class="btn-primary" data-nav="quote"><i class="fas fa-calculator"></i> ${t("quoteBtn")}</a><a href="#" class="btn-outline-white" data-nav="contact"><i class="fas fa-phone"></i> ${t("contactBtn")}</a></div></div></div></div>
-    <section><div class="container"><div class="section-header"><h2 class="section-title">${t("whyTitle")}</h2></div><div class="grid-4">${t(
-            "whyItems",
-        )
+        html = `<div class="hero"><div class="container"><div class="hero-content"><div class="hero-badge">${t("heroBadge")}</div><h1>${t("heroTitle")}</h1><p>${t("heroDesc")}</p><div class="hero-buttons"><a href="#" class="btn-primary" data-nav="quote"><i class="fas fa-calculator"></i> ${t("quoteBtn")}</a><a href="#" class="btn-outline-white" data-nav="contact"><i class="fas fa-phone"></i> ${t("contactBtn")}</a></div></div></div></div>
+    <section><div class="container"><div class="section-header"><h2 class="section-title">${t("whyTitle")}</h2></div><div class="grid-4">${t("whyItems")
                 .map(
                     (i) =>
-                        `<div class="card" style="text-align:center;"><div class="card-icon" style="margin:0 auto 12px;background:var(--navy);color:var(--gold);"><i class="fas ${i.icon}"></i></div><h3>${i.title}</h3><p>${i.desc}</p></div>`,
+                        `<div class="card" style="text-align:center;"><div class="card-icon" style="margin:0 auto 12px;background:var(--navy);color:var(--gold);"><i class="fas ${i.icon}"></i></div><h3>${i.title}</h3><p>${i.desc}</p></div>`
                 )
                 .join("")}</div></div></section>
     <section class="bg-cream"><div class="container"><div class="section-header"><h2 class="section-title">${t("portfolioTitle")}</h2><p class="section-desc">${t("portfolioDesc")}</p></div><div class="grid-2" id="homeProjects"></div></div></section>
-    <section><div class="container"><div class="section-header"><h2 class="section-title">${t("testimonialTitle")}</h2></div><div class="grid-3">${t(
-                    "testimonials",
-                )
+    <section><div class="container"><div class="section-header"><h2 class="section-title">${t("testimonialTitle")}</h2></div><div class="grid-3">${t("testimonials")
                 .map(
                     (tm) =>
-                        `<div class="testimonial-card"><div class="stars">${renderStars(tm.stars)}</div><p>"${tm.text}"</p><div class="author">— ${tm.author}</div></div>`,
+                        `<div class="testimonial-card"><div class="stars">${renderStars(tm.stars)}</div><p>"${tm.text}"</p><div class="author">— ${tm.author}</div></div>`
                 )
                 .join("")}</div>
     <div class="testimonial-form"><h3>${t("testimonialFormTitle")}</h3><form id="testimonialForm"><div class="form-group"><label>${t("testimonialFormName")}</label><input required></div><div class="form-group"><label>${t("testimonialFormText")}</label><textarea rows="3" required></textarea></div><div class="form-group"><label>${t("testimonialFormRating")}</label><select>${[5, 4, 3, 2, 1].map((n) => `<option>${n} ⭐</option>`).join("")}</select></div><button type="submit" class="submit-btn">${t("testimonialFormSubmit")}</button><p id="testimonialSuccess" style="color:green;text-align:center;display:none;margin-top:8px;">${t("testimonialSuccess")}</p></form></div></div></section>`;
     } else if (currentPage === "about") {
-        h = `<section><div class="container"><div class="section-header"><h2 class="section-title">${t("about")}</h2></div><p style="max-width:700px;margin:0 auto;text-align:center;">${currentLang === 'ar' ? 'تأسست NASA في باريس عام 2023 على يد أمهر الحرفيين.' : currentLang === 'fr' ? 'NASA a été fondée à Paris en 2023 par des artisans qualifiés.' : 'NASA was founded in Paris in 2023 by skilled craftsmen.'}</p></div></section>`;
+        const aboutText = currentLang === 'ar'
+            ? 'تأسست NASA في باريس عام 2023 على يد أمهر الحرفيين المتخصصين في الكهرباء والدهانات.'
+            : currentLang === 'fr'
+                ? 'NASA a été fondée à Paris en 2023 par des artisans qualifiés spécialisés en électricité et peinture.'
+                : 'NASA was founded in Paris in 2023 by skilled craftsmen specialized in electricity and painting.';
+
+        html = `<section><div class="container"><div class="section-header"><h2 class="section-title">${t("about")}</h2></div><p style="max-width:700px;margin:0 auto;text-align:center;font-size:1.1rem;line-height:1.8;">${aboutText}</p></div></section>`;
     } else if (currentPage === "elec") {
-        h = `<section><div class="container"><div class="section-header"><h2 class="section-title">${t("elecTitle")}</h2><p class="section-desc">${t("elecDesc")}</p></div><div class="grid-2">${t(
-            "elecList",
-        )
+        html = `<section><div class="container"><div class="section-header"><h2 class="section-title">${t("elecTitle")}</h2><p class="section-desc">${t("elecDesc")}</p></div><div class="grid-2">${t("elecList")
             .map(
                 (i) =>
-                    `<div class="card"><i class="fas fa-bolt" style="color:var(--gold);margin-right:8px;"></i> ${i}</div>`,
+                    `<div class="card"><i class="fas fa-bolt" style="color:var(--gold);margin-right:8px;"></i> ${i}</div>`
             )
-            .join(
-                "",
-            )}</div><div class="section-header" style="margin-top:40px;"><h2 class="section-title">${t("processTitle")}</h2></div><div class="grid-4">${t(
-                "processSteps",
-            )
+            .join("")}</div><div class="section-header" style="margin-top:40px;"><h2 class="section-title">${t("processTitle")}</h2></div><div class="grid-4">${t("processSteps")
                 .map(
                     (s, i) =>
-                        `<div class="process-step"><div class="process-number">${i + 1}</div><h4>${s}</h4></div>`,
+                        `<div class="process-step"><div class="process-number">${i + 1}</div><h4>${s}</h4></div>`
                 )
                 .join("")}</div></div></section>`;
     } else if (currentPage === "paint") {
-        h = `<section><div class="container"><div class="section-header"><h2 class="section-title">${t("paintTitle")}</h2><p class="section-desc">${t("paintDesc")}</p></div><div class="grid-2">${t(
-            "paintList",
-        )
+        html = `<section><div class="container"><div class="section-header"><h2 class="section-title">${t("paintTitle")}</h2><p class="section-desc">${t("paintDesc")}</p></div><div class="grid-2">${t("paintList")
             .map(
                 (i) =>
-                    `<div class="card"><i class="fas fa-paint-roller" style="color:var(--gold);margin-right:8px;"></i> ${i}</div>`,
+                    `<div class="card"><i class="fas fa-paint-roller" style="color:var(--gold);margin-right:8px;"></i> ${i}</div>`
             )
             .join("")}</div></div></section>`;
     } else if (currentPage === "portfolio") {
-        h = `<section><div class="container"><div class="section-header"><h2 class="section-title">${t("portfolioTitle")}</h2><p class="section-desc">${t("portfolioDesc")}</p></div><div class="grid-2" id="fullPortfolio"></div></div></section>`;
+        html = `<section><div class="container"><div class="section-header"><h2 class="section-title">${t("portfolioTitle")}</h2><p class="section-desc">${t("portfolioDesc")}</p></div><div class="grid-2" id="fullPortfolio"></div></div></section>`;
     } else if (currentPage === "quote") {
-        h = `<section><div class="container"><div class="form-card"><div class="section-header"><h2 class="section-title">${t("quote")}</h2></div><form id="quoteForm"><div class="form-group"><label>${t("formName")}</label><input required></div><div class="form-group"><label>${t("formPhone")}</label><input type="tel" required></div><div class="form-group"><label>${t("formEmail")}</label><input type="email"></div><div class="form-group"><label>${t("formService")}</label><select><option>${t("elec")}</option><option>${t("paint")}</option><option>${t("elec")} + ${t("paint")}</option></select></div><div class="form-group"><label>${t("formCity")}</label><input placeholder="Paris"></div><div class="form-group"><label>${t("formDetails")}</label><textarea rows="3"></textarea></div><div class="form-group"><label>${t("formUpload")}</label><input type="file"></div><div class="form-group"><label>${t("formDate")}</label><input type="date"></div><button type="submit" class="submit-btn">${t("submit")}</button><p id="formSuccess" style="color:green;text-align:center;display:none;margin-top:12px;">${t("successMsg")}</p></form></div></div></section>`;
+        html = `<section><div class="container"><div class="form-card"><div class="section-header"><h2 class="section-title">${t("quote")}</h2></div><form id="quoteForm"><div class="form-group"><label>${t("formName")}</label><input required></div><div class="form-group"><label>${t("formPhone")}</label><input type="tel" required></div><div class="form-group"><label>${t("formEmail")}</label><input type="email"></div><div class="form-group"><label>${t("formService")}</label><select><option>${t("elec")}</option><option>${t("paint")}</option><option>${t("elec")} + ${t("paint")}</option></select></div><div class="form-group"><label>${t("formCity")}</label><input placeholder="Paris"></div><div class="form-group"><label>${t("formDetails")}</label><textarea rows="3"></textarea></div><div class="form-group"><label>${t("formUpload")}</label><input type="file"></div><div class="form-group"><label>${t("formDate")}</label><input type="date"></div><button type="submit" class="submit-btn">${t("submit")}</button><p id="formSuccess" style="color:green;text-align:center;display:none;margin-top:12px;">${t("successMsg")}</p></form></div></div></section>`;
     } else if (currentPage === "contact") {
-        h = `<section><div class="container"><div class="section-header"><h2 class="section-title">${t("contactTitle")}</h2></div><div class="grid-2"><div class="card"><h3>NASA</h3><p><i class="fas fa-map-marker-alt"></i> 15 rue Lepic Paris 75018</p><p><i class="fas fa-phone"></i> 06 51 54 51 29</p><p><i class="fas fa-phone"></i> 07 67 20 16 57</p><p><i class="fas fa-envelope"></i> nasabatiment75@gmail.com</p></div><div class="card" style="min-height:250px;display:flex;align-items:center;justify-content:center;background:var(--bg-tertiary);">🗺️ Google Maps – Paris 75018</div></div></div></section>`;
+        html = `<section><div class="container"><div class="section-header"><h2 class="section-title">${t("contactTitle")}</h2></div><div class="grid-2"><div class="card"><h3>NASA</h3><p><i class="fas fa-map-marker-alt"></i> 15 rue Lepic Paris 75018</p><p><i class="fas fa-phone"></i> 06 51 54 51 29</p><p><i class="fas fa-phone"></i> 07 67 20 16 57</p><p><i class="fas fa-envelope"></i> nasabatiment75@gmail.com</p></div><div class="card" style="min-height:250px;display:flex;align-items:center;justify-content:center;background:var(--bg-tertiary);">🗺️ Google Maps – Paris 75018</div></div></div></section>`;
     }
-    c.innerHTML = h;
-    c.className = "active-page container";
+
+    container.innerHTML = html;
+    container.className = "active-page container";
 
     // Render project cards
     const projectsContainer =
         document.getElementById("homeProjects") ||
         document.getElementById("fullPortfolio");
-    if (projectsContainer) {
+
+    if (projectsContainer && t("projects")) {
         projectsContainer.innerHTML = t("projects")
             .map(
                 (p, i) => `
@@ -773,7 +791,7 @@ function renderPage() {
           </div>
         </div>
       </div>
-    `,
+    `
             )
             .join("");
 
@@ -782,47 +800,56 @@ function renderPage() {
             btn.addEventListener("click", function () {
                 const idx = this.dataset.project;
                 const detail = document.getElementById("projectDetail" + idx);
+                if (!detail) return;
                 const isOpen = detail.classList.contains("open");
                 detail.classList.toggle("open");
                 this.classList.toggle("expanded");
-                this.querySelector("span").textContent = isOpen
-                    ? t("viewDetails")
-                    : t("hideDetails");
+                const span = this.querySelector("span");
+                if (span) {
+                    span.textContent = isOpen ? t("viewDetails") : t("hideDetails");
+                }
             });
         });
     }
 
     bindContentLinks();
-    document.getElementById("quoteForm")?.addEventListener("submit", (e) => {
-        e.preventDefault();
-        document.getElementById("formSuccess").style.display = "block";
-    });
-    document
-        .getElementById("testimonialForm")
-        ?.addEventListener("submit", (e) => {
-            e.preventDefault();
-            document.getElementById("testimonialSuccess").style.display = "block";
-        });
 
-    // حفظ الصفحة الحالية
+    const quoteForm = document.getElementById("quoteForm");
+    if (quoteForm) {
+        quoteForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            const successMsg = document.getElementById("formSuccess");
+            if (successMsg) successMsg.style.display = "block";
+        });
+    }
+
+    const testimonialForm = document.getElementById("testimonialForm");
+    if (testimonialForm) {
+        testimonialForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            const successMsg = document.getElementById("testimonialSuccess");
+            if (successMsg) successMsg.style.display = "block";
+        });
+    }
+
     saveState();
     updateURL();
 }
 
 function bindContentLinks() {
-    document.querySelectorAll("#pageContent [data-nav]").forEach((el) =>
-        el.addEventListener("click", (e) => {
+    document.querySelectorAll("#pageContent [data-nav]").forEach((el) => {
+        el.addEventListener("click", function (e) {
             e.preventDefault();
-            navigateTo(el.dataset.nav);
-        }),
-    );
+            navigateTo(this.dataset.nav);
+        });
+    });
 }
 
-function navigateTo(p) {
-    if (pages.includes(p)) {
-        currentPage = p;
-        saveState(); // حفظ الصفحة فوراً
-        updateURL(); // تحديث URL
+function navigateTo(page) {
+    if (pages.includes(page)) {
+        currentPage = page;
+        saveState();
+        updateURL();
         renderPage();
         buildDesktopNav();
         buildMobileNav();
@@ -830,26 +857,20 @@ function navigateTo(p) {
     }
 }
 
-// ===== التهيئة الأولية =====
 function initializeApp() {
-    // تحميل الحالة من URL أولاً (إذا وجدت)
     loadStateFromURL();
-
-    // ثم تحميل الحالة من localStorage (ت override إذا وجدت)
     loadSavedState();
-
-    // تطبيق الثيم
     initTheme();
-
-    // تحديث الواجهة
     updateDir();
     buildAll();
     renderPage();
-
-    // حفظ الحالة النهائية
     saveState();
     updateURL();
 }
 
-// بدء التطبيق
-initializeApp();
+// Start the application when DOM is ready
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initializeApp);
+} else {
+    initializeApp();
+}
