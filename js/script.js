@@ -25,7 +25,7 @@ const translations = {
                 desc: "خبرة في المشاريع الباريسية الراقية",
             },
             {
-                icon: "fa-solid fa-shield-halved",
+                icon: "fa-shield-haltered",
                 title: "معايير NF C15-100",
                 desc: "التزام بالمعايير الكهربائية الفرنسية",
             },
@@ -441,6 +441,56 @@ const translations = {
     },
 };
 
+// ===== استعادة الحالة المحفوظة =====
+function loadSavedState() {
+    // استعادة اللغة المحفوظة
+    const savedLang = localStorage.getItem('nasa_lang');
+    if (savedLang && translations[savedLang]) {
+        currentLang = savedLang;
+    }
+
+    // استعادة الصفحة المحفوظة
+    const savedPage = localStorage.getItem('nasa_page');
+    if (savedPage && pages.includes(savedPage)) {
+        currentPage = savedPage;
+    }
+
+    // استعادة الوضع (dark/light)
+    const savedTheme = localStorage.getItem('nasa_theme');
+    if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    }
+}
+
+// ===== حفظ الحالة =====
+function saveState() {
+    localStorage.setItem('nasa_lang', currentLang);
+    localStorage.setItem('nasa_page', currentPage);
+}
+
+// ===== تحديث URL مع الحالة (اختياري - للـ browser history) =====
+function updateURL() {
+    const url = new URL(window.location);
+    url.searchParams.set('lang', currentLang);
+    url.searchParams.set('page', currentPage);
+    window.history.replaceState({}, '', url);
+}
+
+// ===== استعادة الحالة من URL أيضاً =====
+function loadStateFromURL() {
+    const url = new URL(window.location);
+    const langParam = url.searchParams.get('lang');
+    const pageParam = url.searchParams.get('page');
+
+    if (langParam && translations[langParam]) {
+        currentLang = langParam;
+    }
+
+    if (pageParam && pages.includes(pageParam)) {
+        currentPage = pageParam;
+    }
+}
+
 let currentLang = "fr",
     currentPage = "home";
 const pages = [
@@ -459,7 +509,7 @@ function t(k) {
 
 // ===== THEME MANAGEMENT =====
 function initTheme() {
-    const savedTheme = localStorage.getItem('theme') || 'light';
+    const savedTheme = localStorage.getItem('nasa_theme') || 'light';
     document.documentElement.setAttribute('data-theme', savedTheme);
     updateThemeIcon();
 }
@@ -468,7 +518,7 @@ function toggleTheme() {
     const currentTheme = document.documentElement.getAttribute('data-theme');
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
+    localStorage.setItem('nasa_theme', newTheme);
     updateThemeIcon();
 }
 
@@ -507,6 +557,8 @@ document.getElementById("langMenu").addEventListener("click", (e) => {
     const opt = e.target.closest(".lang-option");
     if (opt) {
         currentLang = opt.dataset.lang;
+        saveState(); // حفظ اللغة المختارة
+        updateURL(); // تحديث URL
         updateDir();
         buildAll();
         renderPage();
@@ -751,6 +803,10 @@ function renderPage() {
             e.preventDefault();
             document.getElementById("testimonialSuccess").style.display = "block";
         });
+
+    // حفظ الصفحة الحالية
+    saveState();
+    updateURL();
 }
 
 function bindContentLinks() {
@@ -765,6 +821,8 @@ function bindContentLinks() {
 function navigateTo(p) {
     if (pages.includes(p)) {
         currentPage = p;
+        saveState(); // حفظ الصفحة فوراً
+        updateURL(); // تحديث URL
         renderPage();
         buildDesktopNav();
         buildMobileNav();
@@ -772,8 +830,26 @@ function navigateTo(p) {
     }
 }
 
-// Initialisation
-initTheme();
-updateDir();
-buildAll();
-renderPage();
+// ===== التهيئة الأولية =====
+function initializeApp() {
+    // تحميل الحالة من URL أولاً (إذا وجدت)
+    loadStateFromURL();
+
+    // ثم تحميل الحالة من localStorage (ت override إذا وجدت)
+    loadSavedState();
+
+    // تطبيق الثيم
+    initTheme();
+
+    // تحديث الواجهة
+    updateDir();
+    buildAll();
+    renderPage();
+
+    // حفظ الحالة النهائية
+    saveState();
+    updateURL();
+}
+
+// بدء التطبيق
+initializeApp();
