@@ -722,8 +722,8 @@ function buildFooter() {
             contactDiv.innerHTML = `
                 <h4 id="footerContactTitle">${t("footerContact")}</h4>
                 <p><i class="fas fa-map-marker-alt"></i> 15 rue Lepic Paris 75018</p>
-                <p><i class="fas fa-phone"></i> 06 51 54 51 29</p>
-                <p><i class="fas fa-phone"></i> 07 67 20 16 57</p>
+                    <p><i class="fas fa-phone"></i> <span class="phone-ltr">06 51 54 51 29</span></p>
+                    <p><i class="fas fa-phone"></i> <span class="phone-ltr">07 67 20 16 57</span></p>
                 <p><i class="fas fa-envelope"></i> nasabatiment75@gmail.com</p>
             `;
         }
