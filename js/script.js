@@ -694,11 +694,19 @@ function buildFooter() {
         footerContactTitle.textContent = t("footerContact");
     }
 
+    // ✅ ترجمة روابط الخدمات
+    const footerElecLink = document.getElementById("footerElecLink");
+    const footerPaintLink = document.getElementById("footerPaintLink");
+
+    if (footerElecLink) footerElecLink.textContent = t("elec");
+    if (footerPaintLink) footerPaintLink.textContent = t("paint");
+
     const fl = document.getElementById("footerLinks");
     if (fl) {
         fl.innerHTML = pages
             .map((p) => `<a href="#" data-nav="${p}">${t(p)}</a>`)
             .join("");
+
         fl.querySelectorAll("a").forEach((a) => {
             a.addEventListener("click", (e) => {
                 e.preventDefault();
@@ -726,6 +734,11 @@ function buildAll() {
     buildDesktopNav();
     buildMobileNav();
     buildFooter();
+    const footerElecLink = document.getElementById("footerElecLink");
+    const footerPaintLink = document.getElementById("footerPaintLink");
+
+    if (footerElecLink) footerElecLink.textContent = t("elec");
+    if (footerPaintLink) footerPaintLink.textContent = t("paint");
 }
 
 function renderStars(n) {
